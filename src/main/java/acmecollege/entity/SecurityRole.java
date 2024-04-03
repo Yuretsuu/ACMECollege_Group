@@ -19,20 +19,42 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.persistence.AttributeOverride;
+import javax.persistence.Basic;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.ManyToMany;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
 @SuppressWarnings("unused")
 
 /**
  * Role class used for (JSR-375) Java EE Security authorization/authentication
  */
 //TODO SR01 - Make this into JPA entity and add all necessary annotations
-public class SecurityRole implements Serializable {
+@Entity
+@Table(name = "security_role")
+@NamedQueries({
+    @NamedQuery(
+		name = "SecurityRole.findUsersByStudentId",
+		query = "SELECT u FROM SecurityRole sr JOIN sr.users u WHERE u.student.id = :studentId"
+    )
+})
+public class SecurityRole extends PojoBase implements Serializable {
     /** Explicit set serialVersionUID */
     private static final long serialVersionUID = 1L;
 
-    protected int id;
+    //Likely not needed, as I extended POJOBASE
+	// protected int id;
     
+    @Basic
+    @Column(name = "name")
     protected String roleName;
     
+    @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
     protected Set<SecurityUser> users = new HashSet<SecurityUser>();
 
     public SecurityRole() {

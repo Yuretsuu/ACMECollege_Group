@@ -36,6 +36,7 @@ import static acmecollege.utility.MyConstants.USER_ROLE;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +45,8 @@ import java.util.Set;
 import javax.ejb.Singleton;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -171,13 +174,36 @@ public class ACMECollegeService implements Serializable {
         Student student = getStudentById(id);
         if (student != null) {
             em.refresh(student);
+            
+            try {
             TypedQuery<SecurityUser> findUser = 
+            		em.createNamedQuery("SecurityRole.findUsersByStudentId", SecurityUser.class)
+                    .setParameter("studentId", id);
+            SecurityUser sUser = findUser.getSingleResult();
+            
                 /* TODO ACMECS02 - Use NamedQuery on SecurityRole to find this related Student
                    so that when we remove it, the relationship from SECURITY_USER table
                    is not dangling
-                */ null;
-            SecurityUser sUser = findUser.getSingleResult();
+                */
+            // Disassociate the SecurityUser from their SecurityRoles
+            Set<SecurityRole> roles = new HashSet<>(sUser.getRoles()); // Make a copy to avoid ConcurrentModificationException
+            for (SecurityRole role : roles) {
+                sUser.getRoles().remove(role);
+                role.getUsers().remove(sUser);
+                // Depending on your persistence context, you may need to merge these changes
+                em.merge(role);
+            }
+            
             em.remove(sUser);
+            
+            } catch (NoResultException e) {
+                // Handle the case where no SecurityUser is found. 
+            	LOG.error("No SecurityUser found for Student with ID: " + id, e);
+            } catch (NonUniqueResultException e) {
+                // Handle the case where more than one SecurityUser is found. 
+            	LOG.error("Multiple SecurityUser instances found for Student with ID: " + id, e);
+            }
+
             em.remove(student);
         }
     }

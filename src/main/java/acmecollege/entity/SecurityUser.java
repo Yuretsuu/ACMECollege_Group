@@ -20,6 +20,22 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.persistence.AttributeOverride;
+import javax.persistence.Basic;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import acmecollege.rest.serializer.SecurityRoleSerializer;
+
 @SuppressWarnings("unused")
 
 /**
@@ -27,18 +43,32 @@ import java.util.Set;
  */
 
 //TODO - Make this into JPA entity and add all the necessary annotations
-public class SecurityUser implements Serializable, Principal {
+@Entity
+@Table(name = "security_user")
+public class SecurityUser extends PojoBase implements Serializable, Principal {
     /** Explicit set serialVersionUID */
     private static final long serialVersionUID = 1L;
 
-    protected int id;
-    
+    //Likely not needed, as I extended POJOBASE
+	// protected int id; 
+    @Basic
+    @Column(name = "username")
     protected String username;
     
+    @Basic
+    @Column(name = "password_hash")
     protected String pwHash;
     
+    @OneToOne(mappedBy = "securityUser", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "student_id", referencedColumnName = "id")
     protected Student student;
     
+    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "user_has_role",
+        joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
+        inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id")
+    )
     protected Set<SecurityRole> roles = new HashSet<SecurityRole>();
 
     public SecurityUser() {
@@ -70,6 +100,7 @@ public class SecurityUser implements Serializable, Principal {
     }
 
     // TODO SU01 - Setup custom JSON serializer
+    @JsonSerialize(using = SecurityRoleSerializer.class)
     public Set<SecurityRole> getRoles() {
         return roles;
     }

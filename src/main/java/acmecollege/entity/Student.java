@@ -23,8 +23,10 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -55,6 +57,10 @@ public class Student extends PojoBase implements Serializable {
 	@Basic(optional = false)
     @Column(name = "last_name", nullable = false, length = 50)
 	private String lastName;
+	
+	@OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "security_user_id")
+    protected SecurityUser securityUser;
 
 	@OneToMany(cascade = CascadeType.MERGE, fetch = FetchType.LAZY, mappedBy = "owner")
 	private Set<MembershipCard> membershipCards = new HashSet<>();
@@ -102,6 +108,13 @@ public class Student extends PojoBase implements Serializable {
 		setFirstName(firstName);
 		setLastName(lastName);
 	}
+    public SecurityUser getSecurityUser() {
+        return securityUser;
+    }
+    
+    public void setSecurityUser(SecurityUser securityUser) {
+        this.securityUser = securityUser;
+    }
 	
 	//Inherited hashCode/equals is sufficient for this entity class
 
