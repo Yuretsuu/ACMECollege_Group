@@ -29,6 +29,7 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -45,6 +46,7 @@ import acmecollege.rest.serializer.SecurityRoleSerializer;
 //TODO - Make this into JPA entity and add all the necessary annotations
 @Entity
 @Table(name = "security_user")
+@NamedQuery(name="SecurityUser.userByName", query="SELECT u FROM SecurityUser u WHERE u.username = :param1")
 public class SecurityUser extends PojoBase implements Serializable, Principal {
     /** Explicit set serialVersionUID */
     private static final long serialVersionUID = 1L;
