@@ -510,12 +510,15 @@ public class ACMECollegeService implements Serializable {
         return null;
     }
 
-//    public boolean isClubMembershipDuplicated(ClubMembership clubMembership) {
-//        TypedQuery<Long> query = em.createQuery(
-//            "SELECT COUNT(c) FROM ClubMembership c WHERE c.uniqueField = :uniqueField", Long.class);
-//        query.setParameter("uniqueField", clubMembership.getUniqueField()); // Adjust according to actual unique field
-//        return query.getSingleResult() > 0;
-//    }
+    public boolean isClubMembershipDuplicated(ClubMembership clubMembership) {
+        TypedQuery<Long> query = em.createQuery(
+            "SELECT COUNT(cm) FROM ClubMembership cm WHERE cm.club.id = :clubId AND cm.durationAndStatus.startDate = :startDate", Long.class);
+        query.setParameter("clubId", clubMembership.getStudentClub().getId());
+        query.setParameter("startDate", clubMembership.getDurationAndStatus().getStartDate());  // assuming startDate is a field
+        return query.getSingleResult() > 0;
+    }
+
+
     @Transactional
     public boolean deleteClubMembership(int membershipId) {
         ClubMembership clubMembership = em.find(ClubMembership.class, membershipId);
