@@ -8,7 +8,7 @@
  * 
  * Updated by:  Group NN
  *   studentId, firstName, lastName (as from ACSIS)
- *   studentId, firstName, lastName (as from ACSIS)
+ *   041075438, Krish, Patel (as from ACSIS)
  *   studentId, firstName, lastName (as from ACSIS)
  *   studentId, firstName, lastName (as from ACSIS)
  *
@@ -418,5 +418,116 @@ public class ACMECollegeService implements Serializable {
         }
         return clubMembershipToBeUpdated;
     }
+
+    @Transactional
+    public MembershipCard persistMembershipCard(MembershipCard newMembershipCard) {
+        em.persist(newMembershipCard);
+        return newMembershipCard;
+    }
+    public MembershipCard getMembershipCardById(int cardId) {
+        return em.find(MembershipCard.class, cardId);
+    }
+    @Transactional
+    public boolean deleteMembershipCard(int cardId) {
+        MembershipCard card = em.find(MembershipCard.class, cardId);
+        if (card != null) {
+            em.remove(card);
+            return true;
+        }
+        return false;
+    }
+
+    @Transactional
+    public Course findCourseByCode(String courseCode) {
+        try {
+            TypedQuery<Course> query = em.createNamedQuery("Course.findByCode", Course.class);
+            query.setParameter("courseCode", courseCode);
+            return query.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
+    @Transactional
+    public Course persistCourse(Course newCourse) {
+        em.persist(newCourse);
+        return newCourse;
+    }
+    public Course getCourseById(Long courseId) {
+        return em.find(Course.class, courseId);
+    }
+    @Transactional
+    public Course updateCourse(Long courseId, Course updatedCourse) {
+        Course course = em.find(Course.class, courseId);
+        if (course != null) {
+            course.setCourseCode(updatedCourse.getCourseCode());
+            course.setCourseTitle(updatedCourse.getCourseTitle());
+            course.setCreditUnits(updatedCourse.getCreditUnits());
+            course.setYear(updatedCourse.getYear());
+            course.setSemester(updatedCourse.getSemester());
+            em.merge(course);
+            return course;
+        }
+        return null;
+    }
+    @Transactional
+    public boolean deleteCourse(Long courseId) {
+        Course course = em.find(Course.class, courseId);
+        if (course != null) {
+            em.remove(course);
+            return true; // Successful deletion
+        }
+        return false; // Course not found
+    }
+
+    @Transactional
+    public PeerTutorRegistration persistPeerTutorRegistration(PeerTutorRegistration newPeerTutorRegistration) {
+        em.persist(newPeerTutorRegistration);
+        em.flush();  // Ensure changes are committed immediately
+        return newPeerTutorRegistration;
+    }
+    public PeerTutorRegistration getPeerTutorRegistrationById(Long registrationId) {
+        return em.find(PeerTutorRegistration.class, registrationId);
+    }
+    @Transactional
+    public boolean deletePeerTutorRegistration(Long registrationId) {
+        PeerTutorRegistration registration = em.find(PeerTutorRegistration.class, registrationId);
+        if (registration != null) {
+            em.remove(registration);
+            return true;
+        }
+        return false;
+    }
+    @Transactional
+    public PeerTutorRegistration updatePeerTutorRegistration(Long registrationId, PeerTutorRegistration updatedPeerTutorRegistration) {
+        PeerTutorRegistration existingRegistration = em.find(PeerTutorRegistration.class, registrationId);
+        if (existingRegistration != null) {
+            existingRegistration.setPeerTutor(updatedPeerTutorRegistration.getPeerTutor());
+            existingRegistration.setStudent(updatedPeerTutorRegistration.getStudent());
+            existingRegistration.setCourse(updatedPeerTutorRegistration.getCourse());
+            em.merge(existingRegistration);
+            return existingRegistration;
+        }
+        return null;
+    }
+
+//    public boolean isClubMembershipDuplicated(ClubMembership clubMembership) {
+//        TypedQuery<Long> query = em.createQuery(
+//            "SELECT COUNT(c) FROM ClubMembership c WHERE c.uniqueField = :uniqueField", Long.class);
+//        query.setParameter("uniqueField", clubMembership.getUniqueField()); // Adjust according to actual unique field
+//        return query.getSingleResult() > 0;
+//    }
+    @Transactional
+    public boolean deleteClubMembership(int membershipId) {
+        ClubMembership clubMembership = em.find(ClubMembership.class, membershipId);
+        if (clubMembership != null) {
+            em.remove(clubMembership);
+            return true;  // Deletion successful
+        }
+        return false;  // Membership not found
+    }
+
+
+
+
     
 }
