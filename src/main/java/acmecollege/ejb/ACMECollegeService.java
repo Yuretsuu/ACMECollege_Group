@@ -45,6 +45,7 @@ import java.util.Set;
 import javax.ejb.Singleton;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.EntityNotFoundException;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
@@ -59,6 +60,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import acmecollege.entity.ClubMembership;
+import acmecollege.entity.Course;
 import acmecollege.entity.MembershipCard;
 import acmecollege.entity.PeerTutor;
 import acmecollege.entity.PeerTutorRegistration;
@@ -84,13 +86,14 @@ public class ACMECollegeService implements Serializable {
     @Inject
     protected Pbkdf2PasswordHash pbAndjPasswordHash;
 
+    //Student
     public List<Student> getAllStudents() {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Student> cq = cb.createQuery(Student.class);
         cq.select(cq.from(Student.class));
         return em.createQuery(cq).getResultList();
     }
-
+    
     public Student getStudentById(int id) {
         return em.find(Student.class, id);
     }
@@ -120,32 +123,7 @@ public class ACMECollegeService implements Serializable {
         userRole.getUsers().add(userForNewStudent);
         em.persist(userForNewStudent);
     }
-
-    @Transactional
-    public PeerTutor setPeerTutorForStudentCourse(int studentId, int courseId, PeerTutor newPeerTutor) {
-        Student studentToBeUpdated = em.find(Student.class, studentId);
-        if (studentToBeUpdated != null) { // Student exists
-            Set<PeerTutorRegistration> peerTutorRegistrations = studentToBeUpdated.getPeerTutorRegistrations();
-            peerTutorRegistrations.forEach(pt -> {
-                if (pt.getCourse().getId() == courseId) {
-                    if (pt.getPeerTutor() != null) { // PeerTutor exists
-                        PeerTutor peer = em.find(PeerTutor.class, pt.getPeerTutor().getId());
-                        peer.setPeerTutor(newPeerTutor.getFirstName(),
-                        				  newPeerTutor.getLastName(),
-                        				  newPeerTutor.getProgram());
-                        em.merge(peer);
-                    }
-                    else { // PeerTutor does not exist
-                        pt.setPeerTutor(newPeerTutor);
-                        em.merge(studentToBeUpdated);
-                    }
-                }
-            });
-            return newPeerTutor;
-        }
-        else return null;  // Student doesn't exists
-    }
-
+    
     /**
      * To update a student
      * 
@@ -207,6 +185,140 @@ public class ACMECollegeService implements Serializable {
             em.remove(student);
         }
     }
+    
+    //PeerTutor
+    public List<PeerTutor> getAllPeerTutors() {
+        return em.createNamedQuery("PeerTutor.findAll", PeerTutor.class).getResultList();
+    }
+    
+    @Transactional
+    public PeerTutor persistPeerTutor(PeerTutor newPeerTutor) {
+        em.persist(newPeerTutor);
+        em.flush();
+        return newPeerTutor; 
+    }
+    
+    public PeerTutor getPeerTutorById(int id) {
+        return em.find(PeerTutor.class, id);
+    }
+
+    @Transactional
+    public PeerTutor updatePeerTutor(int id, PeerTutor updatedPeerTutor) {
+        PeerTutor peerTutor = em.find(PeerTutor.class, id);
+        if (peerTutor != null) {
+            peerTutor.setFirstName(updatedPeerTutor.getFirstName());
+            peerTutor.setLastName(updatedPeerTutor.getLastName());
+            peerTutor.setProgram(updatedPeerTutor.getProgram());
+            em.merge(peerTutor);
+        }
+        return peerTutor;
+    }
+    
+    @Transactional
+    public void deletePeerTutor(int id) {
+        PeerTutor peerTutor = em.find(PeerTutor.class, id);
+        if (peerTutor != null) {
+            em.remove(peerTutor);
+        }
+    }
+
+    public boolean isDuplicatePeerTutor(String firstName, String lastName, String program) {
+        Long count = em.createNamedQuery("PeerTutor.isDuplicate", Long.class)
+                       .setParameter("param1", firstName)
+                       .setParameter("param2", lastName)
+                       .setParameter("param3", program)
+                       .getSingleResult();
+        return count > 0;
+    }
+
+    public PeerTutor findPeerTutorByNameAndProgram(String firstName, String lastName, String program) {
+        try {
+            return em.createNamedQuery("PeerTutor.findByNameProgram", PeerTutor.class)
+                     .setParameter("param1", firstName)
+                     .setParameter("param2", lastName)
+                     .setParameter("param3", program)
+                     .getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
+    
+    @Transactional
+    public PeerTutorRegistration setPeerTutorForStudentCourse(int studentId, int courseId, PeerTutor newPeerTutor) {
+        // Find the student and the course
+        Student student = em.find(Student.class, studentId);
+        Course course = em.find(Course.class, courseId);
+
+        if (student == null || course == null) {
+            throw new EntityNotFoundException("Student or Course not found");
+        }
+
+        // Find or create a new PeerTutorRegistration
+        PeerTutorRegistration registration = findPeerTutorRegistration(studentId, courseId);
+        if (registration == null) {
+            registration = new PeerTutorRegistration();
+            registration.setStudent(student);
+            registration.setCourse(course);
+            registration.setPeerTutor(newPeerTutor);  // Assuming newPeerTutor is managed or to be persisted
+            em.persist(registration);
+        } else {
+            // If a peer tutor is already assigned, update the peer tutor details
+            if (registration.getPeerTutor() != null) {
+                PeerTutor existingPeer = registration.getPeerTutor();
+                existingPeer.setFirstName(newPeerTutor.getFirstName());
+                existingPeer.setLastName(newPeerTutor.getLastName());
+                existingPeer.setProgram(newPeerTutor.getProgram());
+                em.merge(existingPeer);
+            } else {
+                // Assign new peer tutor
+                registration.setPeerTutor(newPeerTutor); // Assuming newPeerTutor is managed or to be persisted
+                em.merge(registration);
+            }
+        }
+        return registration;
+    }
+
+    private PeerTutorRegistration findPeerTutorRegistration(int studentId, int courseId) {
+        // Assuming there is a named query in PeerTutorRegistration entity for this
+        try {
+            return em.createNamedQuery("PeerTutorRegistration.findByStudentAndCourse", PeerTutorRegistration.class)
+                     .setParameter("studentId", studentId)
+                     .setParameter("courseId", courseId)
+                     .getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
+
+
+
+//    @Transactional
+//    public PeerTutor setPeerTutorForStudentCourse(int studentId, int courseId, PeerTutor newPeerTutor) {
+//    	Student studentToBeUpdated = em.find(Student.class, studentId);
+//        if (studentToBeUpdated != null) { // Student exists
+//            Set<PeerTutorRegistration> peerTutorRegistrations = studentToBeUpdated.getPeerTutorRegistrations();
+//            peerTutorRegistrations.forEach(pt -> {
+//                if (pt.getCourse().getId() == courseId) {
+//                    if (pt.getPeerTutor() != null) { // PeerTutor exists
+//                        PeerTutor peer = em.find(PeerTutor.class, pt.getPeerTutor().getId());
+//                        peer.setPeerTutor(newPeerTutor.getFirstName(),
+//                        				  newPeerTutor.getLastName(),
+//                        				  newPeerTutor.getProgram());
+//                        em.merge(peer);
+//                    }
+//                    else { // PeerTutor does not exist
+//                        pt.setPeerTutor(newPeerTutor);
+//                        em.merge(studentToBeUpdated);
+//                    }
+//                }
+//            });
+//            return newPeerTutor;
+//        }
+//        else return null;  // Student doesn't exists
+//    }
+    
+
+
     
     public List<StudentClub> getAllStudentClubs() {
         CriteriaBuilder cb = em.getCriteriaBuilder();

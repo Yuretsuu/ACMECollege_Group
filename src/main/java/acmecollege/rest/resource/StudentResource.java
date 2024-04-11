@@ -26,6 +26,7 @@ import java.util.List;
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import javax.persistence.EntityNotFoundException;
 import javax.security.enterprise.SecurityContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.ForbiddenException;
@@ -45,6 +46,7 @@ import org.glassfish.soteria.WrappingCallerPrincipal;
 
 import acmecollege.ejb.ACMECollegeService;
 import acmecollege.entity.PeerTutor;
+import acmecollege.entity.PeerTutorRegistration;
 import acmecollege.entity.SecurityUser;
 import acmecollege.entity.Student;
 
@@ -110,10 +112,21 @@ public class StudentResource {
     @PUT
     @RolesAllowed({ADMIN_ROLE})
     @Path(STUDENT_COURSE_PEER_TUTOR_RESOURCE_PATH)
-    public Response updatePeerTutorForStudentCourse(@PathParam("studentId") int studentId, @PathParam("courseId") int courseId, PeerTutor newPeerTutor) {
-        Response response = null;
-        PeerTutor peerTutor = service.setPeerTutorForStudentCourse(studentId, courseId, newPeerTutor);
-        response = Response.ok(peerTutor).build();
-        return response;
+    public Response updatePeerTutorForStudentCourse(@PathParam("studentId") int studentId, 
+                                                    @PathParam("courseId") int courseId, 
+                                                    PeerTutor newPeerTutor) {
+        LOG.debug("Updating PeerTutor for StudentCourse - studentId: {}, courseId: {}", studentId, courseId);
+        try {
+            PeerTutorRegistration registration = service.setPeerTutorForStudentCourse(studentId, courseId, newPeerTutor);
+            // Return the registration if successful
+            return Response.ok(registration).build();
+        } catch (EntityNotFoundException e) {
+            // Handle the case where the student or course does not exist
+            return Response.status(Status.NOT_FOUND).entity(e.getMessage()).build();
+        } catch (Exception e) {
+            // Handle other exceptions appropriately
+            return Response.status(Status.INTERNAL_SERVER_ERROR).entity("An error occurred while updating the PeerTutor.").build();
+        }
     }
+
 }
