@@ -115,10 +115,17 @@ public class ACMECollegeService implements Serializable {
         pbAndjProperties.put(PROPERTY_SALT_SIZE, DEFAULT_SALT_SIZE);
         pbAndjProperties.put(PROPERTY_KEY_SIZE, DEFAULT_KEY_SIZE);
         pbAndjPasswordHash.initialize(pbAndjProperties);
+        
+        
+        
+        
         String pwHash = pbAndjPasswordHash.generate(DEFAULT_USER_PASSWORD.toCharArray());
         userForNewStudent.setPwHash(pwHash);
         userForNewStudent.setStudent(newStudent);
-        SecurityRole userRole = /* TODO ACMECS01 - Use NamedQuery on SecurityRole to find USER_ROLE */ null;
+        SecurityRole userRole = em.createNamedQuery("SecurityRole.findByRoleName", SecurityRole.class)
+                .setParameter("roleName", USER_ROLE)
+                .getSingleResult(); 
+        /* TODO ACMECS01 - Use NamedQuery on SecurityRole to find USER_ROLE */
         userForNewStudent.getRoles().add(userRole);
         userRole.getUsers().add(userForNewStudent);
         em.persist(userForNewStudent);
