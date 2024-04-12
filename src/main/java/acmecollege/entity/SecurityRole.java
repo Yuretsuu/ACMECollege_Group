@@ -24,6 +24,9 @@ import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
@@ -40,19 +43,23 @@ import javax.persistence.Table;
 @NamedQueries({
     @NamedQuery(
 		name = "SecurityRole.findUsersByStudentId",
-		query = "SELECT u FROM SecurityRole sr JOIN sr.users u WHERE u.student.id = :studentId"
-    )
+		query = "SELECT u FROM SecurityRole sr JOIN sr.users u WHERE u.student.id = :param1"
+    ),
+    
+    @NamedQuery(name="SecurityRole.findByRoleName",
+    query="SELECT sr FROM SecurityRole sr WHERE sr.roleName = :param1")
 })
-public class SecurityRole extends PojoBase implements Serializable {
+public class SecurityRole implements Serializable {
     /** Explicit set serialVersionUID */
     private static final long serialVersionUID = 1L;
 
-    //Likely not needed, as I extended POJOBASE
-	// protected int id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "role_id")
+    private int id;
     
-    @Basic
-    @Column(name = "name")
-    protected String roleName;
+    @Column(name = "name", unique = true)
+    private String roleName;
     
     @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
     protected Set<SecurityUser> users = new HashSet<SecurityUser>();

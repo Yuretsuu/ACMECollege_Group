@@ -26,9 +26,13 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
@@ -46,13 +50,29 @@ import acmecollege.rest.serializer.SecurityRoleSerializer;
 //TODO - Make this into JPA entity and add all the necessary annotations
 @Entity
 @Table(name = "security_user")
-@NamedQuery(name="SecurityUser.userByName", query="SELECT u FROM SecurityUser u WHERE u.username = :param1")
-public class SecurityUser extends PojoBase implements Serializable, Principal {
+@NamedQueries({
+    @NamedQuery(
+        name = "SecurityUser.findAll",
+        query = "SELECT DISTINCT su FROM SecurityUser su"
+    ),
+    @NamedQuery(
+        name = "SecurityUser.findById",
+        query = "SELECT DISTINCT su FROM SecurityUser su WHERE su.id = :param1"
+    ),
+    @NamedQuery(
+        name = "SecurityUser.userByName",
+        query = "SELECT su FROM SecurityUser su WHERE su.username = :param1"
+    )
+})
+public class SecurityUser implements Serializable, Principal {
     /** Explicit set serialVersionUID */
     private static final long serialVersionUID = 1L;
 
-    //Likely not needed, as I extended POJOBASE
-	// protected int id; 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
+    private int id;
+    
     @Basic
     @Column(name = "username")
     protected String username;
@@ -61,15 +81,15 @@ public class SecurityUser extends PojoBase implements Serializable, Principal {
     @Column(name = "password_hash")
     protected String pwHash;
     
-    @OneToOne(mappedBy = "securityUser", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", referencedColumnName = "id")
-    protected Student student;
+    private Student student;
     
-    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, fetch = FetchType.LAZY)
+    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinTable(
         name = "user_has_role",
-        joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
-        inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id")
+        joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "role_id")
     )
     protected Set<SecurityRole> roles = new HashSet<SecurityRole>();
 
