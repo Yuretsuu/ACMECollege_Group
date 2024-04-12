@@ -38,6 +38,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import acmecollege.rest.serializer.StudentClubSerializer;
 
 /**
  * The persistent class for the student_club database table.
@@ -48,6 +51,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @NamedQuery(name = StudentClub.ALL_STUDENT_CLUBS_QUERY_NAME, query = "SELECT distinct sc FROM StudentClub sc left JOIN FETCH sc.clubMemberships")
 @NamedQuery(name = StudentClub.SPECIFIC_STUDENT_CLUB_QUERY_NAME, query = "SELECT distinct sc FROM StudentClub sc left JOIN FETCH sc.clubMemberships where sc.id = :param1")
 @NamedQuery(name = StudentClub.IS_DUPLICATE_QUERY_NAME, query = "SELECT count(sc) FROM StudentClub sc where sc.name = :param1")
+@NamedQuery(name = StudentClub.MEMBERSHIP_COUNT, query = "SELECT sc, COUNT(membership) FROM StudentClub sc LEFT JOIN sc.clubMemberships membership GROUP BY sc")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(columnDefinition = "bit(1)", name = "academic", discriminatorType = DiscriminatorType.INTEGER)
 //TODO SC06 - Add in JSON annotations to indicate different sub-classes of StudentClub
@@ -61,12 +65,14 @@ property = "entity-type")
 @Type(value = NonAcademicStudentClub.class, name = "non_academic_student_club")
 })
 //@JsonIgnoreProperties({"hibernateLazyInitializer", "entity-type"})
+@JsonSerialize(using = StudentClubSerializer.class)
 public abstract class StudentClub extends PojoBase implements Serializable {
 	private static final long serialVersionUID = 1L;
 
     public static final String ALL_STUDENT_CLUBS_QUERY_NAME = "StudentClub.findAll";
     public static final String SPECIFIC_STUDENT_CLUB_QUERY_NAME = "StudentClub.findByName";
     public static final String IS_DUPLICATE_QUERY_NAME = "StudentClub.isDuplicate";
+    public static final String MEMBERSHIP_COUNT = "StudentClub.findAllWithMembershipCount";
 
 	@Basic(optional = false)
 	@Column(name = "name", nullable = false, length = 100)
