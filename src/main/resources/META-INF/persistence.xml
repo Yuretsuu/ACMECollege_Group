@@ -28,6 +28,9 @@
         <property name="hibernate.transaction.jta.platform" value="org.hibernate.service.jta.platform.internal.SunOneJtaPlatform" />
         <!-- To solve LazyInitializationException -->
         <property name="hibernate.enable_lazy_load_no_trans" value="true" />
+        <property name="hibernate.show_sql" value="true"/>
+        <property name="hibernate.format_sql" value="true"/>
+        <property name="hibernate.use_sql_comments" value="true"/>
     </properties>
   </persistence-unit>
 </persistence>

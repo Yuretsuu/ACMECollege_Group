@@ -73,7 +73,7 @@ public class CustomIdentityStore implements IdentityStore {
                     }
                 }
                 catch (Exception e) {
-                    // e.printStackTrace();
+                     e.printStackTrace();
                 }
             }
         }

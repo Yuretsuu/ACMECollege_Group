@@ -123,7 +123,7 @@ public class ACMECollegeService implements Serializable {
         userForNewStudent.setPwHash(pwHash);
         userForNewStudent.setStudent(newStudent);
         SecurityRole userRole = em.createNamedQuery("SecurityRole.findByRoleName", SecurityRole.class)
-                .setParameter("roleName", USER_ROLE)
+                .setParameter(PARAM1, USER_ROLE)
                 .getSingleResult(); 
         /* TODO ACMECS01 - Use NamedQuery on SecurityRole to find USER_ROLE */
         userForNewStudent.getRoles().add(userRole);
@@ -163,7 +163,7 @@ public class ACMECollegeService implements Serializable {
             try {
             TypedQuery<SecurityUser> findUser = 
             		em.createNamedQuery("SecurityRole.findUsersByStudentId", SecurityUser.class)
-                    .setParameter("studentId", id);
+                    .setParameter(PARAM1, id);
             SecurityUser sUser = findUser.getSingleResult();
             
                 /* TODO ACMECS02 - Use NamedQuery on SecurityRole to find this related Student
