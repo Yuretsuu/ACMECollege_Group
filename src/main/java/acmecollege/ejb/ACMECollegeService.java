@@ -116,9 +116,6 @@ public class ACMECollegeService implements Serializable {
         pbAndjProperties.put(PROPERTY_KEY_SIZE, DEFAULT_KEY_SIZE);
         pbAndjPasswordHash.initialize(pbAndjProperties);
         
-        
-        
-        
         String pwHash = pbAndjPasswordHash.generate(DEFAULT_USER_PASSWORD.toCharArray());
         userForNewStudent.setPwHash(pwHash);
         userForNewStudent.setStudent(newStudent);
@@ -324,9 +321,7 @@ public class ACMECollegeService implements Serializable {
 //        else return null;  // Student doesn't exists
 //    }
     
-
-
-    
+    //Student Club
     public List<StudentClub> getAllStudentClubs() {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<StudentClub> cq = cb.createQuery(StudentClub.class);
@@ -340,19 +335,6 @@ public class ACMECollegeService implements Serializable {
         TypedQuery<StudentClub> specificStudentClubQuery = em.createNamedQuery(SPECIFIC_STUDENT_CLUB_QUERY_NAME, StudentClub.class);
         specificStudentClubQuery.setParameter(PARAM1, id);
         return specificStudentClubQuery.getSingleResult();
-    }
-    
-    // These methods are more generic.
-
-    public <T> List<T> getAll(Class<T> entity, String namedQuery) {
-        TypedQuery<T> allQuery = em.createNamedQuery(namedQuery, entity);
-        return allQuery.getResultList();
-    }
-    
-    public <T> T getById(Class<T> entity, String namedQuery, int id) {
-        TypedQuery<T> allQuery = em.createNamedQuery(namedQuery, entity);
-        allQuery.setParameter(PARAM1, id);
-        return allQuery.getSingleResult();
     }
 
     @Transactional
@@ -378,7 +360,6 @@ public class ACMECollegeService implements Serializable {
     }
     
     // Please study & use the methods below in your test suites
-    
     public boolean isDuplicated(StudentClub newStudentClub) {
         TypedQuery<Long> allStudentClubsQuery = em.createNamedQuery(IS_DUPLICATE_QUERY_NAME, Long.class);
         allStudentClubsQuery.setParameter(PARAM1, newStudentClub.getName());
@@ -403,29 +384,7 @@ public class ACMECollegeService implements Serializable {
         return studentClubToBeUpdated;
     }
     
-    @Transactional
-    public ClubMembership persistClubMembership(ClubMembership newClubMembership) {
-        em.persist(newClubMembership);
-        return newClubMembership;
-    }
-
-    public ClubMembership getClubMembershipById(int cmId) {
-        TypedQuery<ClubMembership> allClubMembershipQuery = em.createNamedQuery(ClubMembership.FIND_BY_ID, ClubMembership.class);
-        allClubMembershipQuery.setParameter(PARAM1, cmId);
-        return allClubMembershipQuery.getSingleResult();
-    }
-
-    @Transactional
-    public ClubMembership updateClubMembership(int id, ClubMembership clubMembershipWithUpdates) {
-    	ClubMembership clubMembershipToBeUpdated = getClubMembershipById(id);
-        if (clubMembershipToBeUpdated != null) {
-            em.refresh(clubMembershipToBeUpdated);
-            em.merge(clubMembershipWithUpdates);
-            em.flush();
-        }
-        return clubMembershipToBeUpdated;
-    }
-
+    //Membership Card
     @Transactional
     public MembershipCard persistMembershipCard(MembershipCard newMembershipCard) {
         em.persist(newMembershipCard);
@@ -444,6 +403,7 @@ public class ACMECollegeService implements Serializable {
         return false;
     }
 
+    //Courses
     @Transactional
     public Course findCourseByCode(String courseCode) {
         try {
@@ -486,6 +446,7 @@ public class ACMECollegeService implements Serializable {
         return false; // Course not found
     }
 
+    //PeerTutor Registrations
     @Transactional
     public PeerTutorRegistration persistPeerTutorRegistration(PeerTutorRegistration newPeerTutorRegistration) {
         em.persist(newPeerTutorRegistration);
@@ -517,6 +478,30 @@ public class ACMECollegeService implements Serializable {
         return null;
     }
 
+    //Clubmemberships   
+    @Transactional
+    public ClubMembership persistClubMembership(ClubMembership newClubMembership) {
+        em.persist(newClubMembership);
+        return newClubMembership;
+    }
+
+    public ClubMembership getClubMembershipById(int cmId) {
+        TypedQuery<ClubMembership> allClubMembershipQuery = em.createNamedQuery(ClubMembership.FIND_BY_ID, ClubMembership.class);
+        allClubMembershipQuery.setParameter(PARAM1, cmId);
+        return allClubMembershipQuery.getSingleResult();
+    }
+
+    @Transactional
+    public ClubMembership updateClubMembership(int id, ClubMembership clubMembershipWithUpdates) {
+    	ClubMembership clubMembershipToBeUpdated = getClubMembershipById(id);
+        if (clubMembershipToBeUpdated != null) {
+            em.refresh(clubMembershipToBeUpdated);
+            em.merge(clubMembershipWithUpdates);
+            em.flush();
+        }
+        return clubMembershipToBeUpdated;
+    }
+
     public boolean isClubMembershipDuplicated(ClubMembership clubMembership) {
         TypedQuery<Long> query = em.createQuery(
             "SELECT COUNT(cm) FROM ClubMembership cm WHERE cm.club.id = :clubId AND cm.durationAndStatus.startDate = :startDate", Long.class);
@@ -535,9 +520,18 @@ public class ACMECollegeService implements Serializable {
         }
         return false;  // Membership not found
     }
-
-
-
-
     
+    // These methods are more generic.
+
+    public <T> List<T> getAll(Class<T> entity, String namedQuery) {
+        TypedQuery<T> allQuery = em.createNamedQuery(namedQuery, entity);
+        return allQuery.getResultList();
+    }
+    
+    public <T> T getById(Class<T> entity, String namedQuery, int id) {
+        TypedQuery<T> allQuery = em.createNamedQuery(namedQuery, entity);
+        allQuery.setParameter(PARAM1, id);
+        return allQuery.getSingleResult();
+    }
+  
 }
