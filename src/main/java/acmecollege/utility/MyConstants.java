@@ -36,7 +36,7 @@ public interface MyConstants {
     public static final String RESOURCE_PATH_ID_PATH =  "/{" + RESOURCE_PATH_ID_ELEMENT + "}";
     public static final String CREDENTIAL_RESOURCE_NAME = "credential";
     public static final String STUDENT_RESOURCE_NAME =  "student";
-    public static final String COURSE_RESOURCE_NAME = "course";
+    public static final String COURSE_RESOURCE_NAME = "course"; 	
     public static final String MEMBERSHIP_CARD_RESOURCE_NAME = "membershipcard";
     public static final String PEER_TUTOR_REGISTRATION_RESOURCE_NAME = "peertutorregistration";
     public static final String STUDENT_CLUB_RESOURCE_NAME =  "studentclub";

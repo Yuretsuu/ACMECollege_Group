@@ -29,6 +29,7 @@ import javax.inject.Inject;
 import javax.persistence.EntityNotFoundException;
 import javax.security.enterprise.SecurityContext;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -126,6 +127,20 @@ public class StudentResource {
         } catch (Exception e) {
             // Handle other exceptions appropriately
             return Response.status(Status.INTERNAL_SERVER_ERROR).entity("An error occurred while updating the PeerTutor.").build();
+        }
+    }
+    
+    @DELETE
+    @Path(RESOURCE_PATH_ID_PATH)
+    @RolesAllowed(ADMIN_ROLE) // Ensure only authorized roles can execute
+    public Response deleteStudent(@PathParam(RESOURCE_PATH_ID_ELEMENT) int id) {
+        try {
+        	service.deleteStudentById(id);
+            return Response.ok().entity("Student successfully deleted.").build();
+        } catch (Exception e) {
+            LOG.error("Error deleting student with ID: " + id, e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                           .entity("Failed to delete student due to internal error.").build();
         }
     }
 

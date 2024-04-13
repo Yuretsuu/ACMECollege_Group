@@ -34,13 +34,13 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-import acmecollege.rest.serializer.StudentClubSerializer;
 
 /**
  * The persistent class for the student_club database table.
@@ -64,8 +64,8 @@ property = "entity-type")
 @Type(value = AcademicStudentClub.class, name = "academic_student_club"),
 @Type(value = NonAcademicStudentClub.class, name = "non_academic_student_club")
 })
-//@JsonIgnoreProperties({"hibernateLazyInitializer", "entity-type"})
-@JsonSerialize(using = StudentClubSerializer.class)
+
+@JsonIgnoreProperties({"hibernateLazyInitializer", "entity-type"})
 public abstract class StudentClub extends PojoBase implements Serializable {
 	private static final long serialVersionUID = 1L;
 

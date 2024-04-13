@@ -11,8 +11,11 @@ import java.util.List;
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import javax.persistence.EntityManager;
 import javax.persistence.EntityNotFoundException;
+import javax.persistence.PersistenceContext;
 import javax.security.enterprise.SecurityContext;
+import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -37,6 +40,9 @@ public class PeerTutorResource {
 
     @Inject
     protected SecurityContext sc;
+    
+    @PersistenceContext
+    private EntityManager em;
 
     //Basic CRUD Operations
     @GET
@@ -70,6 +76,41 @@ public class PeerTutorResource {
         PeerTutor peerTutor = service.updatePeerTutor(id, updatedPeerTutor);
         return Response.ok(peerTutor).build();
     }
+    
+    @DELETE
+    @Path("/{peerTutorId}")
+    @RolesAllowed({ADMIN_ROLE})
+    @Transactional
+    public Response deletePeerTutor(@PathParam("peerTutorId") int peerTutorId) {
+        LOG.debug("Attempting to delete peer tutor with ID: {}", peerTutorId);
+        try {
+            PeerTutor peerTutor = em.find(PeerTutor.class, peerTutorId);
+            if (peerTutor == null) {
+                LOG.info("Peer tutor not found with ID: {}", peerTutorId);
+                return Response.status(Response.Status.NOT_FOUND).build();
+            }
+            
+            // First, disassociate this peer tutor from any peer tutor registrations
+            List<PeerTutorRegistration> registrations = em.createQuery(
+                "SELECT ptr FROM PeerTutorRegistration ptr WHERE ptr.peerTutor.id = :param1",
+                PeerTutorRegistration.class
+            ).setParameter("param1", peerTutorId).getResultList();
+            
+            for (PeerTutorRegistration reg : registrations) {
+                reg.setPeerTutor(null); // Disassociate the relationship
+                em.merge(reg); 
+            }
+            
+            // Now, remove the peer tutor itself
+            em.remove(peerTutor);
+            em.flush(); // Synchronize with the database
+            return Response.ok().build(); // 204 No Content
+        } catch (Exception e) {
+            LOG.error("Error occurred while attempting to delete peer tutor with ID: " + peerTutorId, e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error deleting peer tutor: " + (e.getMessage() != null ? e.getMessage() : "Unknown error")).build();
+        }
+    }
+
 
     //Relationships
     @PUT
