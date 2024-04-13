@@ -37,6 +37,8 @@ import javax.persistence.NamedQuery;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import acmecollege.rest.serializer.SecurityRoleSerializer;
@@ -83,6 +85,7 @@ public class SecurityUser implements Serializable, Principal {
     
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", referencedColumnName = "id")
+    @JsonBackReference
     private Student student;
     
     @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })

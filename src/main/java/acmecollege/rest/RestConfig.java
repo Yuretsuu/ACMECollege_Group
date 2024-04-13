@@ -14,11 +14,15 @@ import static acmecollege.utility.MyConstants.APPLICATION_API_VERSION;
 import static acmecollege.utility.MyConstants.USER_ROLE;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.security.DeclareRoles;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
+
+import acmecollege.rest.resource.PeerTutorRegistrationResource;
 
 @ApplicationPath(APPLICATION_API_VERSION)
 //This used to be in web.xml
@@ -38,8 +42,9 @@ public class RestConfig extends Application {
         Map<String, Object> props = new HashMap<>();
         props.put("jersey.config.jsonFeature", "JacksonFeature");
         // Add x-jersey-tracing tracing headers Note:  If more than 100 trace messages, need to alter configuration to allow for more
-        //props.put("jersey.config.server.tracing.type", "ALL");
-        //props.put("jersey.config.server.tracing.threshold", "VERBOSE");
+        props.put("jersey.config.server.tracing.type", "ALL");
+        props.put("jersey.config.server.tracing.threshold", "VERBOSE");
         return props;
     }
+
 }

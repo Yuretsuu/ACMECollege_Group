@@ -5,7 +5,7 @@
  * @author Shariar (Shawn) Emami
  * 
  * Updated by:  Group NN
- *   studentId, firstName, lastName (as from ACSIS)
+ *   040923145, Liz, Quach (as from ACSIS)
  *   studentId, firstName, lastName (as from ACSIS)
  *   studentId, firstName, lastName (as from ACSIS)
  *   studentId, firstName, lastName (as from ACSIS)
@@ -29,7 +29,9 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 /**
  * The persistent class for the student database table.
@@ -37,9 +39,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @SuppressWarnings("unused")
 @Entity
 @Table(name = "student")
-@NamedQuery(name = Student.ALL_STUDENTS_QUERY_NAME, query = "SELECT s FROM Student s LEFT JOIN FETCH s.membershipCards LEFT JOIN FETCH s.peerTutorRegistrations")
-@NamedQuery(name = Student.QUERY_STUDENT_BY_ID, query = "SELECT s FROM Student s LEFT JOIN FETCH s.membershipCards LEFT JOIN FETCH s.peerTutorRegistrations where s.id = :param1")
-//No need for AttributeOverride as student id column is called id as well.
+@NamedQuery(name = Student.ALL_STUDENTS_QUERY_NAME, query = "SELECT s FROM Student s")
+@NamedQuery(name = Student.QUERY_STUDENT_BY_ID, query = "SELECT s FROM Student s where s.id = :param1")
 public class Student extends PojoBase implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -59,6 +60,7 @@ public class Student extends PojoBase implements Serializable {
 	private String lastName;
 	
     @OneToOne(mappedBy = "student", fetch = FetchType.LAZY)
+    @JsonBackReference
     private SecurityUser securityUser;
 
 	@OneToMany(cascade = CascadeType.MERGE, fetch = FetchType.LAZY, mappedBy = "owner")
