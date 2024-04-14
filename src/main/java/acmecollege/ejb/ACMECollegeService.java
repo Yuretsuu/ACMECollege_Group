@@ -419,12 +419,13 @@ public class ACMECollegeService implements Serializable {
         em.persist(newCourse);
         return newCourse;
     }
-    public Course getCourseById(Long courseId) {
+    public Course getCourseById(int courseId) {
         return em.find(Course.class, courseId);
     }
+
     @Transactional
-    public Course updateCourse(Long courseId, Course updatedCourse) {
-        Course course = em.find(Course.class, courseId);
+    public Course updateCourse(int id, Course updatedCourse) {
+        Course course = em.find(Course.class, id);
         if (course != null) {
             course.setCourseCode(updatedCourse.getCourseCode());
             course.setCourseTitle(updatedCourse.getCourseTitle());
@@ -437,7 +438,7 @@ public class ACMECollegeService implements Serializable {
         return null;
     }
     @Transactional
-    public boolean deleteCourse(Long courseId) {
+    public boolean deleteCourse(int courseId) {
         Course course = em.find(Course.class, courseId);
         if (course != null) {
             em.remove(course);
@@ -533,5 +534,20 @@ public class ACMECollegeService implements Serializable {
         allQuery.setParameter(PARAM1, id);
         return allQuery.getSingleResult();
     }
+
+    @Transactional
+    public List<Course> getAllCourses() {
+        return em.createNamedQuery("Course.findAll", Course.class).getResultList();
+    }
+
+    @Transactional
+    public List<PeerTutorRegistration> getRegistrationsByStudentId(int studentId) {
+        TypedQuery<PeerTutorRegistration> query = em.createQuery(
+            "SELECT r FROM PeerTutorRegistration r WHERE r.id.studentId = :studentId", PeerTutorRegistration.class);
+        query.setParameter("studentId", studentId);
+        return query.getResultList();
+    }
+
+
   
 }

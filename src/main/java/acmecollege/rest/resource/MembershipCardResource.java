@@ -44,13 +44,18 @@ public class MembershipCardResource {
 
     @GET
     @Path("/{cardId}")
+    @RolesAllowed({"ADMIN_ROLE", "USER_ROLE"})  // Both roles can initiate the request
     public Response getMembershipCardById(@PathParam("cardId") int cardId) {
         LOG.debug("Retrieving membership card with id = {}", cardId);
         MembershipCard membershipCard = service.getMembershipCardById(cardId);
         if (membershipCard == null) {
             return Response.status(Response.Status.NOT_FOUND).entity("Membership card not found").build();
         }
-        return Response.ok(membershipCard).build();
+        // Check if the current user is the card owner or has ADMIN_ROLE
+        if (sc.isCallerInRole("ADMIN_ROLE") || membershipCard.getOwner().getFirstName().equals(sc.getCallerPrincipal().getName())) {
+            return Response.ok(membershipCard).build();
+        }
+        return Response.status(Response.Status.FORBIDDEN).entity("Access denied").build();
     }
 
     @DELETE
