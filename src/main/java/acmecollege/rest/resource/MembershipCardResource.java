@@ -72,7 +72,7 @@ public class MembershipCardResource {
 
     @DELETE
     @Path("/{cardId}")
-    @RolesAllowed({"ADMIN_ROLE"})
+    @RolesAllowed({ADMIN_ROLE})
     public Response deleteMembershipCard(@PathParam("cardId") int cardId) {
         LOG.debug("Deleting membership card with id = {}", cardId);
         boolean isDeleted = service.deleteMembershipCard(cardId);
