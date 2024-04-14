@@ -17,6 +17,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import java.util.List;
 
 import static acmecollege.utility.MyConstants.MEMBERSHIP_CARD_RESOURCE_NAME;
 import static acmecollege.utility.MyConstants.ADMIN_ROLE;
@@ -37,6 +38,14 @@ public class MembershipCardResource {
 
     @Inject
     protected SecurityContext sc;
+
+    @GET
+    @RolesAllowed({ADMIN_ROLE})
+    public Response getAllMembershipCards() {
+        LOG.debug("Retrieving all membership cards...");
+        List<MembershipCard> membershipCards = service.getAllMembershipCards();
+        return Response.ok(membershipCards).build();
+    }
 
     @POST
     @RolesAllowed({ADMIN_ROLE})

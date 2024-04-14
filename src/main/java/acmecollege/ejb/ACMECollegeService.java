@@ -547,6 +547,10 @@ public class ACMECollegeService implements Serializable {
         query.setParameter("studentId", studentId);
         return query.getResultList();
     }
+    public List<MembershipCard> getAllMembershipCards() {
+        LOG.debug("Fetching all membership cards from the database.");
+        return em.createQuery("SELECT m FROM MembershipCard m", MembershipCard.class).getResultList();
+    }
 
 
   
