@@ -5,7 +5,7 @@
  * @author Shariar (Shawn) Emami
  * 
  * Updated by:  Group NN
- *   studentId, firstName, lastName (as from ACSIS)
+ *   040923145, Liz, Quach (as from ACSIS)
  *   studentId, firstName, lastName (as from ACSIS)
  *   studentId, firstName, lastName (as from ACSIS)
  *   studentId, firstName, lastName (as from ACSIS)
@@ -29,6 +29,8 @@ import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @SuppressWarnings("unused")
 
@@ -89,6 +91,7 @@ public class PeerTutor extends PojoBase implements Serializable {
 	@OneToMany(cascade=CascadeType.MERGE, fetch = FetchType.LAZY, mappedBy = "peerTutor")
 	// Hint - java.util.Set is used as a collection, however List could have been used as well.
 	// Hint - java.util.Set will be unique and also possibly can provide better get performance with HashCode.
+	@JsonManagedReference
 	private Set<PeerTutorRegistration> peerTutorRegistrations = new HashSet<>();
 
 	public PeerTutor() {

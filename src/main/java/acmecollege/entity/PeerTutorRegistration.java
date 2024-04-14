@@ -30,8 +30,11 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.MapsId;
+import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @SuppressWarnings("unused")
 /**
@@ -40,9 +43,20 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "peer_tutor_registration")
 @Access(AccessType.FIELD)
-@NamedQuery(name = "PeerTutorRegistration.findAll", query = "SELECT ptr FROM PeerTutorRegistration ptr")
+@NamedQueries({
+    @NamedQuery(name = PeerTutorRegistration.FIND_ALL,
+                query = "SELECT ptr FROM PeerTutorRegistration ptr JOIN FETCH ptr.student JOIN FETCH ptr.course"
+        ),
+    @NamedQuery(
+    	    name = PeerTutorRegistration.FIND_BY_STUDENT,
+    	    query = "SELECT ptr FROM PeerTutorRegistration ptr JOIN FETCH ptr.peerTutor WHERE ptr.id.studentId = :param1"
+    	)
+})
 public class PeerTutorRegistration extends PojoBaseCompositeKey<PeerTutorRegistrationPK> implements Serializable {
 	private static final long serialVersionUID = 1L;
+	
+	public static final String FIND_ALL = "PeerTutorRegistration.findAll";
+	public static final String FIND_BY_STUDENT = "PeerTutorRegistration.findByStudent";
 
 	// Hint - What annotation is used for a composite primary key type?
 	@EmbeddedId
@@ -61,6 +75,7 @@ public class PeerTutorRegistration extends PojoBaseCompositeKey<PeerTutorRegistr
 
 	@ManyToOne(cascade = CascadeType.ALL, optional = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "peer_tutor_id", referencedColumnName = "peer_tutor_id", nullable = true)
+	@JsonBackReference
 	private PeerTutor peerTutor;
 
 	@Column(name = "numeric_grade")
