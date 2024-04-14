@@ -18,10 +18,14 @@ import javax.ws.rs.core.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import static acmecollege.utility.MyConstants.MEMBERSHIP_CARD_RESOURCE_NAME;
+import static acmecollege.utility.MyConstants.ADMIN_ROLE;
+import static acmecollege.utility.MyConstants.USER_ROLE;
+
 import acmecollege.ejb.ACMECollegeService;
 import acmecollege.entity.MembershipCard;
 
-@Path("membershipcards")
+@Path(MEMBERSHIP_CARD_RESOURCE_NAME)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class MembershipCardResource {
@@ -35,13 +39,12 @@ public class MembershipCardResource {
     protected SecurityContext sc;
 
     @POST
-    @RolesAllowed({"ADMIN_ROLE"})
+    @RolesAllowed({ADMIN_ROLE})
     public Response addMembershipCard(MembershipCard newMembershipCard) {
         LOG.debug("Adding a new membership card");
         MembershipCard persistedMembershipCard = service.persistMembershipCard(newMembershipCard);
         return Response.ok(persistedMembershipCard).build();
     }
-
     @GET
     @Path("/{cardId}")
     @RolesAllowed({"ADMIN_ROLE", "USER_ROLE"})  // Both roles can initiate the request
