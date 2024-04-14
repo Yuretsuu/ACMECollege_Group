@@ -50,10 +50,21 @@ public class MembershipCardResource {
     @POST
     @RolesAllowed({ADMIN_ROLE})
     public Response addMembershipCard(MembershipCard newMembershipCard) {
-        LOG.debug("Adding a new membership card");
-        MembershipCard persistedMembershipCard = service.persistMembershipCard(newMembershipCard);
-        return Response.ok(persistedMembershipCard).build();
+        LOG.debug("Attempting to add a new membership card: {}", newMembershipCard);
+        if (newMembershipCard == null) {
+            LOG.error("Failed to add a new membership card because the received data is null.");
+            return Response.status(Response.Status.BAD_REQUEST).entity("Membership card data must not be null.").build();
+        }
+        try {
+            MembershipCard persistedMembershipCard = service.persistMembershipCard(newMembershipCard);
+            LOG.debug("Successfully added a new membership card with ID: {}", persistedMembershipCard.getId());
+            return Response.status(Response.Status.CREATED).entity(persistedMembershipCard).build();
+        } catch (Exception e) {
+            LOG.error("Error while persisting the new membership card: ", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error creating membership card.").build();
+        }
     }
+
     @GET
     @Path("/{cardId}")
     @RolesAllowed({"ADMIN_ROLE", "USER_ROLE"})  // Both roles can initiate the request
