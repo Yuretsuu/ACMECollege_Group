@@ -5,7 +5,7 @@
  * (Original Author) Mike Norman
  *
  *
- * (Modified) @author Student Name
+ * (Modified) @author Emmanuel Alabi
  */
 package acmecollege;
 

@@ -5,10 +5,9 @@
  * @author Shariar (Shawn) Emami
  * 
  * Updated by:  Group NN
- *   studentId, firstName, lastName (as from ACSIS)
- *   studentId, firstName, lastName (as from ACSIS)
- *   studentId, firstName, lastName (as from ACSIS)
- *   studentId, firstName, lastName (as from ACSIS)
+ * 040923145, Liz, Quach (as from ACSIS)
+ * 041075438 , Krish Patel (as from ACSIS)
+ * 041082119, Emmanuel, Alabi(as from ACSIS)
  *   
  */
 package acmecollege.entity;
