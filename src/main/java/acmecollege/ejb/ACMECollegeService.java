@@ -385,6 +385,12 @@ public class ACMECollegeService implements Serializable {
     }
     
     //Membership Card
+    
+    public List<MembershipCard> getAllMembershipCards() {
+        LOG.debug("Fetching all membership cards from the database.");
+        return em.createQuery("SELECT m FROM MembershipCard m", MembershipCard.class).getResultList();
+    }
+  
     @Transactional
     public MembershipCard persistMembershipCard(MembershipCard newMembershipCard) {
         em.persist(newMembershipCard);
@@ -547,5 +553,6 @@ public class ACMECollegeService implements Serializable {
         query.setParameter("studentId", studentId);
         return query.getResultList();
     }
-  
+
+
 }
